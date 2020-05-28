@@ -1,0 +1,325 @@
+﻿@using EControle.Core.Data.Types
+
+@using EControle.UI.Web.App_Start.Resources
+@using EControle.UI.Web.Utilites
+
+@{
+    ViewBag.Title = Lang.Dashboard;
+    ViewBag.SupTitle = Lang.Accounts;
+    Layout = "~/Views/Shared/_LayoutSuperAdministrator.cshtml";
+}
+
+
+
+
+<link href="~/Content/eng/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/eng/plugins/datatables-buttons/css/buttons.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/eng/plugins/datatables-autofill/css/autoFill.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/eng/plugins/datatables-responsive/css/responsive.bootstrap4.min.css" rel="stylesheet" />
+<input type="hidden" id="formState" />
+<input type="hidden" id="formEditState" />
+<div class="col-md-12">
+    <div class="card">
+        <div class="card-body">
+            @*<button class="btn btn-flat btn-primary" onclick="Show()">@Options.New</button>*@
+        </div>
+    </div>
+</div>
+<div class="col-md-12"><div id="newForm"></div></div>
+<div class="col-md-12"><div id="editForm"></div></div>
+
+<div class="col-md-12">
+    <div class="card">
+        <div class="card-header">
+            <h3 id="frmTitle" class="card-title">@Lang.Accounts</h3>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body">
+            <table id="_List" class="table table-bordered table-hover text-center text-sm">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>@Lang.Serial</th>
+                        <th>@Lang.Agent @Lang.Name</th>
+                        <th>@Lang.Balance</th>
+                        <th>@Lang.Income</th>
+                        <th>@Lang.OutCome</th>
+                        <th>@Lang.CreateDate</th>
+                        <th>@Lang.LastUpdate</th>
+                        <th>@Options.DeActivate</th>
+                        <th>@Lang.Transactions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <!-- /.card-body -->
+    </div>
+    <!-- /.card -->
+</div>
+
+<div class="modal modal-danger fade" id="modal-delete">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="delete-dismiss">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <p>@Msg.msgDeAcivatethisAccount</p>
+                <input type="hidden" id="SetToDelete" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline pull-left" data-dismiss="modal">@Options.Close</button>
+                <button type="button" onclick="ToggleActivate(false)" class="btn btn-outline">@Options.DeActivate</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+
+<div class="modal modal-warning fade" id="modal-pass-reset">
+    <div class="modal-dialog">
+        <div class="modal-content bg-success">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="reset-dismiss">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <p>@Msg.msgAcivatethisAccount</p>
+                <input type="hidden" id="SetToReset" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline pull-left" data-dismiss="modal">@Options.Close</button>
+                <button type="button" onclick="ToggleActivate(true)" class="btn btn-outline">@Options.Activate</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+
+@section scripts
+{
+    <script src="~/Content/eng/plugins/jquery/jquery.min.js"></script>
+    <script src="~/Scripts/notify.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables-autofill/js/dataTables.autoFill.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables-autofill/js/autoFill.bootstrap4.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+
+
+    <script>
+        //var Toast = [];
+        $(document).ready(function() {
+            $('#newForm').hide();
+            LoadData();
+
+        });
+
+
+        function LoadData() {
+            var table = $('#_List').DataTable({
+                "responsive": true,
+                "paging": true,
+                "lengthChange": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false,
+                "ajax": {
+                    "url": "@Url.Action("GetAccounts", "Account")",
+                    "type": "GET",
+                    "datatype": "json",
+                    "dataSrc": ""
+                },
+                "columnDefs": [
+                    { "targets": [0, 6], "orderable": false },
+                ],
+                "columns": [
+                    { "data": "User.Id", "title": "#" },
+                    {
+                        "render": function(data, type, row, meta) {
+                            return "<span class='text-bold' id='S-" + row.User.Id + "'>" + row.User.Serial + " <i class='fa fa-copy' onclick='Copy(" + row.User.Id +")'></i></span>";
+                        }
+                    },
+                    {
+                        "render": function(data, type, row, meta) {
+                            if (row.User.IsActive) {
+                                return "<a href='@Url.Action("Users", "SuperAdministrator")/role='" + row.User.Role+" class='text-bold'>" +
+                                    row.User.Name +
+                                    " <span class='badge bg-green'>@Lang.Active</span></a>";
+} else {
+                                                return "<a href='@Url.Action("Users", "SuperAdministrator")/role='"+row.User.Role+" class='text-bold'>" +
+                                                    row.User.Name +
+                                                    " <span class='badge bg-danger'>@Lang.NotActive</span></a>";
+                                            }
+                                        }
+                                    },
+                    { "data": "Balance", "title": "@Lang.Balance" },
+                    { "data": "TotalIncome", "title": "@Lang.Income" },
+                    { "data": "TotalOutCome", "title": "@Lang.OutCome" },
+
+                    {
+                        "render": function(data, type, row, meta) {
+                                    return "<a>" + parsDate(row.User.CreateDate) + "</a>";
+                                }
+                    },
+                    {
+                        "render": function(data, type, row, meta) {
+                                    return "<a>" + parsDate(row.LastActivity) + "</a>";
+                                }
+                    },
+                    {
+                        "render": function (data, type, row, meta) {
+                                    if (!row.User.IsActive) {
+                                        return '<button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#modal-pass-reset" onclick="SetToggleActive(' +
+                                            row.User.Id +
+                                            ')"> @Options.Activate</button>';
+                                    } else {
+                                        return '<button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#modal-delete" onclick="SetToggleDeActivate(' +
+                                            row.User.Id +
+                                            ')"> @Options.DeActivate</button>';
+                                    }
+                                }
+                    }, {
+                        "render": function (data, type, row, meta) {
+                                    //alert();
+                                    return "<a class='btn btn-sm btn-info' href='@Url.Action("Transactions")/" + row.User.Id+"'>@Lang.Transactions </a>";
+                                }
+                    },
+                ]
+
+            });
+            setInterval(function() {
+                    table.ajax.reload(); // user paging is not reset on reload
+                },
+                100000);
+        }
+
+
+        @*function Show() {
+            var frmState = $("#formState").val();
+            if (frmState == "shown") {
+                $("#newForm").hide('slow');
+                $("#newForm").empty();
+                $("#editForm").hide('slow');
+                $("#editForm").empty();
+                $("#formState").val("hidden");
+            } else {
+                $.ajax({
+                    type: "GET",
+                    url: "@Url.Action("NewTransaction", "SuperAdministrator")",
+                    traditional: true,
+                    success: function(form) {
+                        $("#editForm").hide('slow');
+                        $("#editForm").empty();
+                        $("#newForm").empty();
+                        $("#newForm").append(form);
+                        $("#newForm").show('slow');
+                        $("#formState").val("shown");
+                    }
+                });
+            }
+
+        }*@
+
+
+
+        function ToggleActivate(activate) {
+            var id;
+            if (activate) {
+                id = $("#SetToReset").val();
+            } else {
+                id = $("#SetToDelete").val();
+            }
+            $("#delete-dismiss").click();
+            $("#reset-dismiss").click();
+            if (id != "") {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("ToggleActivateAccount", "Account")",
+                    data: { id: id },
+                    datatype: "json",
+                    traditional: true,
+                    success: function(state) {
+                        if (state) {
+                            if (activate) {
+                                $.notify("@Msg.ActivatedSuccessfuly", "success");
+                            } else {
+                                $.notify("@Msg.DeActivatedSuccessfuly", "success");
+                            }
+                            $("#SetToDelete").val('');
+                            $("#SetToReset").val('');
+                            ReloadTable();
+
+                        } else {
+                            $.notify("@Msg.Error", "error");
+                        }
+                    },
+                    error: function(err) {
+                        $.notify("@Msg.Error", "error");
+                    }
+                });
+            }
+
+        }
+
+        function SetToggleActive(id) {
+            $("#SetToReset").val(id);
+        }
+
+        function SetToggleDeActivate(id) {
+            $("#SetToDelete").val(id);
+        }
+
+
+        function parsDate(jsonDateString) {
+            try {
+                var date = jsonDateString.replace('/Date(', '');
+                var dt = new Date(parseInt(date));
+                return dt.toLocaleDateString('en-US');
+            } catch (err) {
+                return jsonDateString;
+            }
+        }
+        function Copy(id) {
+            var text = document.getElementById("S-" + id);
+            const el = document.createElement("textarea");
+            el.value = $("#S-"+id).text();
+            document.body.appendChild(el);
+            el.select();
+            //text.setSelectionRange(0, 99999);
+            document.execCommand("copy");
+            document.body.removeChild(el);
+            //const Toast = Swal.mixin({
+            //    toast: true,
+            //    position: 'top-end',
+            //    showConfirmButton: false,
+            //    timer: 3000
+            //});
+            toastr.success("Serial:" + $("#S-" + id).text()+" is copied.");
+            //Toast.fire({
+            //    type: 'success',
+            //    title: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr.'
+            //});
+        }
+        function ReloadTable() {
+            var table = $('#_List').DataTable();
+            table.ajax.reload();
+        }
+
+
+    </script>
+}
+
+

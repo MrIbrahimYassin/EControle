@@ -1,0 +1,498 @@
+﻿@using EControle.Core.Data.Types
+
+@using EControle.UI.Web.App_Start.Resources
+@using EControle.UI.Web.Utilites
+
+@{
+    ViewBag.Title = Lang.Dashboard;
+    ViewBag.SupTitle = Lang.ManageUsers;
+    Role role = (Role)ViewBag.Role;
+    string Name = "";
+    switch (role)
+    {
+        case Role.SuperAdmin:
+            Name = Lang.SystemAdministrators;
+            break;
+        case Role.Admin:
+            Name = Lang.Admins;
+            break;
+        case Role.Accountant:
+            Name = Lang.Accountants;
+            break;
+        case Role.Agent:
+            Name = Lang.Agents;
+            break;
+        case Role.SealsAgent:
+            Name = Lang.SealsAgents;
+            break;
+        case Role.Supervisor:
+            Name = Lang.Supervisors;
+            break;
+
+    }
+    int r = (int)role;
+    Layout = "~/Views/Shared/_LayoutSuperAdministrator.cshtml";
+}
+
+
+
+
+<link href="~/Content/eng/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/eng/plugins/datatables-buttons/css/buttons.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/eng/plugins/datatables-autofill/css/autoFill.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/eng/plugins/datatables-responsive/css/responsive.bootstrap4.min.css" rel="stylesheet" />
+<input type="hidden" id="formState" />
+<input type="hidden" id="formEditState" />
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <button class="btn btn-flat btn-primary" onclick="Show()">@Options.New</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-md-12"><div id="newForm"></div></div>
+<div class="col-md-12"><div id="editForm"></div></div>
+
+<div class="col-md-12">
+    <div class="card">
+        <div class="card-header">
+            <h3 id="frmTitle" class="card-title">@Name</h3>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body">
+            <table id="usersList" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>@Lang.Name</th>
+                        <th>@Lang.Phone</th>
+                        <th>@Lang.Gender</th>
+                        <th>@Lang.UserName</th>
+                        <th>@Lang.CreatedAt</th>
+                        <th>@Lang.Transactions</th>
+                        <th>@Options.Edit</th>
+                        <th>@Options.ResetPassword</th>
+                        <th>@Options.Delete</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <!-- /.card-body -->
+    </div>
+    <!-- /.card -->
+</div>
+
+<div class="modal fade" id="modal-delete">
+    <div class="modal-dialog">
+        <div class="modal-content bg-danger">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="delete-dismiss">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <p>@Msg.msgDelete</p>
+                <input type="hidden" id="SetToDelete" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-light" data-dismiss="modal">@Options.Close</button>
+                <button type="button" onclick="Delete()" class="btn btn-outline-light">@Options.Delete</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+
+<div class="modal modal-warning fade" id="modal-pass-reset">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="reset-dismiss">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <p>@Msg.msgPassReset</p>
+                <input type="hidden" id="SetToReset" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline pull-left" data-dismiss="modal">@Options.Close</button>
+                <button type="button" onclick="ResetPassword()" class="btn btn-outline">@Options.ResetPassword</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+
+@section scripts
+{
+    <script src="~/Content/eng/plugins/jquery/jquery.min.js"></script>
+    <script src="~/Scripts/notify.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables-autofill/js/dataTables.autoFill.min.js"></script>
+<script src="~/Content/eng/plugins/datatables-autofill/js/autoFill.bootstrap4.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+
+
+    <script>
+        $(document).ready(function() {
+            $('#newForm').hide();
+            LoadData();
+        });
+
+
+        function LoadData() {
+            var table = $('#usersList').DataTable({
+                "responsive": true,
+                "paging": true,
+                "lengthChange": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false,
+                "ajax": {
+                    "url": "@Url.Action("GetUsers", "Users", new {role = r})",
+                    "type": "GET",
+                    "datatype": "json",
+                    "dataSrc": ""
+                },
+                "columnDefs": [
+                    { "targets": [0, 6], "orderable": false },
+                ],
+                "columns": [
+                    { "data": "Id", "title": "#" },
+                    {
+                        "render": function(data, type, row, meta) {
+                            if (row.IsActive) {
+                                return "<a class='text-bold'>" +
+                                    row.Name +
+                                    " <span class='badge bg-green'>@Lang.Active</span></a>";
+                            } else {
+                                return "<a class='text-bold'>" +
+                                    row.Name +
+                                    " <span class='badge bg-danger'>@Lang.NotActive</span></a>";
+                            }
+                        }
+                    },
+                    { "data": "Phone", "title": "@Lang.Phone" },
+                    {
+                        "render": function(data, type, row, meta) {
+                            if (row.Gender == 1) {
+                                return "<span class='badge bg-success'>@Lang.Male</span>";
+                            }
+                            if (row.Gender == 2) {
+                                return "<span class='badge bg-success'>@Lang.Female</span>";
+                            } else {
+                                return "<span class='badge bg-primary'>@Lang.Other</span>";
+                            }
+                        }
+                    },
+                    {
+                        "render": function(data, type, row, meta) {
+                            return "<a class='text-bold'>" + row.UserName +"</a>";
+                        }
+                    },
+                    {
+                        "render": function(data, type, row, meta) {
+                            return "<a>" + parsDate(row.CreateDate) + "</a>";
+                        }
+                    },
+                    {
+                        "render": function(data, type, row, meta) {
+                            return "<a class='btn btn-sm btn-warning' onclick='Edit(" + row.Id + ")'>@Options.Edit</a>";
+                        }
+                    }, {
+                        "render": function(data, type, row, meta) {
+                            return "<a href='@Url.Action("Transactions","SuperAdministrator")/"+row.Id+"' target='_blank' class='btn btn-sm btn-info' >@Lang.Transactions</a>";
+                        }
+                    }, {
+                        "render": function (data, type, row, meta) {
+                            if (row.SetNewPassword) {
+                                return '<button type="button" class="btn btn-sm btn-info disabled"> @Options.NewUser</button>';
+                            } else {
+                                return '<button type="button" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#modal-pass-reset" onclick="ResetPassword(' +
+                                    row.Id +
+                                    ')"> @Options.ResetPassword</button>';
+                            }
+                        }
+                    }, {
+                        "render": function (data, type, row, meta) {
+                            if (row.IsDeleted) {
+                                return '<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#modal-delete" onclick="DeleteSet(' +
+                                    row.Id +
+                                    ')"> @Options.Restore</button>';
+                            }
+                            return '<button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#modal-delete" onclick="DeleteSet(' +
+                                row.Id +
+                                ')"> @Options.Delete</button>';
+                        }
+                    }
+
+                ]
+
+            });
+            setInterval(function() {
+                    table.ajax.reload(); // user paging is not reset on reload
+                },
+                100000);
+        }
+
+        function Edit(id) {
+            var frmState = $("#formEditState").val();
+            if (frmState == "shown") {
+                $("#editForm").hide('slow');
+                $("#editForm").empty();
+                $("#newForm").hide('slow');
+                $("#newForm").empty();
+                $("#formEditState").val("hidden");
+            } else {
+
+                $.ajax({
+                    type: "GET",
+                    url: "@Url.Action("EditUserForm", "SuperAdministrator")",
+                    traditional: true,
+                    success: function(form) {
+                        $("#newForm").hide('slow');
+                        $("#newForm").empty();
+                        $("#editForm").append(form);
+                        $("#editForm").show('slow');
+                        $.ajax({
+                            type: "GET",
+                            url: "@Url.Action("GetSingleUser", "Users")",
+                            data: { id: id },
+                            success: function(user) {
+                                $("#UserId").val(user.Id);
+                                alert(user.Id);
+                                $("#Name").val(user.Name);
+                                $("#Phone").val(user.Phone);
+                                $("#UserName").val(user.UserName);
+                                $("#role").val("@ViewBag.Role");
+                                var gen = $("select#Gender option[value='" + user.Gender + "']");
+                                gen.prop('selected', true);
+                            }
+                        });
+                    }
+                });
+                $("#formEditState").val("shown");
+            }
+
+        }
+
+        function Show() {
+            var frmState = $("#formState").val();
+            if (frmState == "shown") {
+                $("#newForm").hide('slow');
+                $("#newForm").empty();
+                $("#editForm").hide('slow');
+                $("#editForm").empty();
+                $("#formState").val("hidden");
+            } else {
+                $.ajax({
+                    type: "GET",
+                    url: "@Url.Action("NewUser", "SuperAdministrator")",
+                    traditional: true,
+                    success: function(form) {
+                        $("#editForm").hide('slow');
+                        $("#editForm").empty();
+                        $("#newForm").empty();
+                        $("#newForm").append(form);
+                        $("#role").val("@ViewBag.Role");
+                        $("#newForm").show('slow');
+                        $("#formState").val("shown");
+                    }
+                });
+            }
+
+        }
+
+        function SaveUser() {
+            var name = $("#Name").val();
+            var phone = $("#Phone").val();
+            var gender = $("select#Gender option").filter(":selected").val();
+            var userName = $("#UserName").val();
+            var role = $("#role").val();
+            if (name == "") {
+                $.notify("@Msg.errName", "warning");
+                return;
+            }
+            if (phone == "") {
+                $.notify("@Msg.errPhone", "warning");
+                return;
+            }
+            if (userName == "") {
+                $.notify("@Msg.errUserName", "error");
+                return;
+            }
+            //Save the user
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("SaveUser", "Users")",
+                data: { name: name, phone: phone, gender: gender, role: role, userName: userName },
+                success: function(state) {
+                    if (state) {
+                        $.notify("@Msg.SavedSuccessfuly", "success");
+                        ReloadTable();
+                        $("#newForm").hide('slow');
+                        $("#newForm").empty();
+                        $("#formState").val("hidden");
+                    } else {
+                        $.notify("@Msg.errPhoneOrEmail", "error");
+                    }
+                },
+                error: function(err) {
+                    //console.log(err);
+                }
+            });
+
+        }
+
+        function UpdateUser() {
+            var id = $("#UserId").val();
+            var name = $("#Name").val();
+            var phone = $("#Phone").val();
+            var gender = $('#Gender').find(":selected").text();
+            var userName = $("#UserName").val();
+            var role = $("#role").val();
+            //Check the user id.
+            if (id == 0 || id == null)
+                return;
+
+            if (name == "") {
+                $.notify("@Msg.errName", "warning");
+                return;
+            }
+            if (phone == "") {
+                $.notify("@Msg.errPhone", "warning");
+                return;
+            }
+            if (userName == "") {
+                $.notify("@Msg.errUserName", "error");
+                return;
+            }
+            $("#btn").addClass('disabled');
+            //Save the user
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("UpdateUser", "Users")",
+                data: {
+                    id: id,
+                    name: name,
+                    phone: phone,
+                    gender: gender,
+                    role:role,
+                    userName: userName
+                },
+                success: function(state) {
+                    if (state) {
+                        $.notify("@Msg.UpdatedSuccessfuly", "success");
+                        $('#editForm').hide('slow');
+                        ReloadTable();
+                    } else {
+                        $.notify("@Msg.errPhoneOrEmail", "error");
+                    }
+                },
+                error: function(err) {
+                    console.log(err);
+                }
+            });
+            $("#btn").addClass('disabled');
+        }
+
+        function Delete() {
+            var id = $("#SetToDelete").val();
+            $("#delete-dismiss").click();
+            if (id != "") {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("DeleteUser", "Users")",
+                    data: { id: id },
+                    datatype: "json",
+                    traditional: true,
+                    success: function(state) {
+                        if (state) {
+                            $.notify("@Msg.DeletedSuccessfuly", "success");
+                            ReloadTable();
+                            $("#SetToDelete").val('');
+                        } else {
+                            $.notify("@Msg.Error", "error");
+                        }
+                    },
+                    error: function(err) {
+                        $.notify("@Msg.Error", "error");
+                    }
+                });
+            }
+
+        }
+
+        function ResetPassword() {
+            var id = $("#SetToReset").val();
+            $("#reset-dismiss").click();
+            if (id != "") {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("ResetUserPassword", "Users")",
+                    data: { id: id },
+                    datatype: "json",
+                    traditional: true,
+                    success: function(state) {
+                        if (state) {
+                            $.notify("@Msg.DeletedSuccessfuly", "success");
+                            ReloadTable();
+                            $("#SetToDelete").val('');
+                        } else {
+                            $.notify("@Msg.Error", "error");
+                        }
+                    },
+                    error: function(err) {
+                        $.notify("@Msg.Error", "error");
+                    }
+                });
+            }
+
+        }
+
+
+
+
+
+        function ResetPassword(id) {
+            $("#SetToReset").val(id);
+        }
+
+        function DeleteSet(id) {
+            $("#SetToDelete").val(id);
+        }
+
+
+        function parsDate(jsonDateString) {
+            try {
+                var date = jsonDateString.replace('/Date(', '');
+                var dt = new Date(parseInt(date));
+                return dt.toLocaleDateString('en-US');
+            } catch (err) {
+                return jsonDateString;
+            }
+        }
+
+        function ReloadTable() {
+            var table = $('#usersList').DataTable();
+            table.ajax.reload();
+        }
+
+
+    </script>
+}
+
+

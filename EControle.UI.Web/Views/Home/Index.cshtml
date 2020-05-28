@@ -1,0 +1,93 @@
+﻿@using EControle.UI.Web.App_Start.Resources
+
+<div class="login-box">
+    <div class="login-logo">
+        <a href="@Url.Action("Index","Home")"><b>E</b>Controller</a>
+    </div>
+    <!-- /.login-logo -->
+    <div class="card">
+        <div class="card-body login-card-body">
+            <p class="login-box-msg">Sign in to start your session</p>
+
+            <div class="input-group mb-3">
+                <input type="text" id="name" class="form-control" placeholder="@Lang.UserName">
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fas fa-envelope"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <input type="password" id="pass"  class="form-control" placeholder="@Lang.Password">
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fas fa-lock"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-8">
+                    <div class="icheck-primary">
+                        <input type="checkbox" id="remember">
+                        <label for="remember">
+                            @Lang.RememberMe
+                        </label>
+                    </div>
+                </div>
+                <!-- /.col -->
+                <div class="col-4">
+                    <button type="button" id="btnLogin" onclick="Login()" class="btn btn-primary btn-block">@Lang.Login</button>
+                </div>
+                <!-- /.col -->
+            </div>
+
+          
+        </div>
+        <!-- /.login-card-body -->
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+        $(document).ready(function() {
+
+        });
+
+        function Login() {
+            var url = "";
+            $("#btnLogin").append(' <i class="fa fa-spinner fa-spin" id="load"></i>');
+            $("#btnLogin").addClass('disabled');
+            var name = $("#name").val();
+            var pass = $("#pass").val();
+            var rememberMe = $('#rememberMe').is(':checked');
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("Login", "Auth")",
+                data: { name:name, pass: pass, rememberMe: rememberMe },
+                success: function (data) {
+                    if (data.state) {
+                        if (url != "") {
+                            window.location.href = url;
+                        } else {
+                            window.location.href = "/" + data.url.RouteValues[1].Value + "/" + data.url.RouteValues[0].Value;
+                        }
+                    } else {
+                        $.notify(data.msg, "error");
+                        $('#btnLogin').find('i').remove();
+                        $("#btnLogin").removeClass('disabled');
+                        $("#btnLogin").show("slow");
+                    }
+                },
+                error: function (xhr) {
+                    $('#btnLogin').find('i').remove();
+                    $("#btnLogin").removeClass('disabled');
+                    $("#btnLogin").show("slow");
+                }
+            });
+            $('#btnLogin').find('i').remove();
+            $("#btnLogin").removeClass('disabled');
+            $("#btnLogin").show("slow");
+        }
+    </script>
+}

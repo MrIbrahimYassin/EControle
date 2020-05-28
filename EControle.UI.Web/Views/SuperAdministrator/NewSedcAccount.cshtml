@@ -1,0 +1,63 @@
+﻿@using EControle.UI.Web.App_Start.Resources
+<div class="row">
+    <div class="card">
+        <div class="card-header">
+            <h3 id="frmTitle" class="card-title">@Options.New @Lang.SEDCAccount</h3>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body">
+            <div class="row">
+
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>@Lang.Name</label>
+                        <input type="text" class="form-control" id="UserName" name="UserName" placeholder="@Lang.UserName" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>@Lang.Password</label>
+                        <input type="text" class="form-control" id="Password" name="Password" placeholder="@Lang.Password" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>@Lang.HttpType</label>
+                        <select id="HttpType" class="form-control">
+                            <option value="http">http</option>
+                            <option value="https">https</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>@Lang.Server</label>
+                        <input type="text" class="form-control" id="Server" name="Server" placeholder="Server" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>@Lang.Port</label>
+                        <input type="text" class="form-control" id="Port" name="Port" placeholder="Default is 80" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>@Lang.Key</label>
+                        <input type="text" class="form-control" id="Key" name="Key" placeholder="" />
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <button class="btn btn-block btn-success" id="btn" onclick="Save()">@Options.Save</button>
+                </div>
+            </div>
+        </div>
+        <!-- /.card-body -->
+    </div>
+</div>
+
+
+
+

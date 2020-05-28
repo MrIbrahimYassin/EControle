@@ -1,0 +1,394 @@
+﻿@using EControle.Core.Data.Types
+
+@using EControle.UI.Web.App_Start.Resources
+@using EControle.UI.Web.Utilites
+
+@{
+    ViewBag.Title = Lang.Dashboard;
+    ViewBag.SupTitle = Lang.SEDCTransactions;
+    Layout = "~/Views/Shared/_LayoutSuperAdministrator.cshtml";
+}
+
+
+
+
+<link href="~/Content/eng/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/eng/plugins/datatables-buttons/css/buttons.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/eng/plugins/datatables-autofill/css/autoFill.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/eng/plugins/datatables-responsive/css/responsive.bootstrap4.min.css" rel="stylesheet" />
+<input type="hidden" id="formState" />
+<input type="hidden" id="formEditState" />
+div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <button class="btn btn-flat btn-primary" onclick="Show()">@Options.New</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@*<div class="row">
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-info"><i class="far fa-bank "></i></span>
+
+            <div class="info-box-content">
+                <span class="info-box-text">@Lang.Balance</span>
+                <span class="info-box-number" id="_balance"></span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-success"><i class="far fa-arrow-circle-o-up "></i></span>
+
+            <div class="info-box-content">
+                <span class="info-box-text">@Lang.OutCome</span>
+                <span class="info-box-number" id="_outcome"></span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-warning"><i class="far fa-arrow-circle-o-down "></i></span>
+
+            <div class="info-box-content">
+                <span class="info-box-text">@Lang.Income</span>
+                <span class="info-box-number" id="_income"></span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-danger"><i class="far fa-clock-o"></i></span>
+
+            <div class="info-box-content">
+                <span class="info-box-text">@Lang.LastUpdate</span>
+                <span class="info-box-number" id="_lastActivety"></span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+    </div>
+    <div class="col-md-3 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-danger"><i class="far fa-tachometer"></i></span>
+
+            <div class="info-box-content">
+                <span class="info-box-text">@Lang.Transactions</span>
+                <span class="info-box-number" id="_transCount"></span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+
+</div>*@
+<div class="col-md-12"><div id="newForm"></div></div>
+<div class="col-md-12"><div id="editForm"></div></div>
+
+<div class="col-md-12">
+    <div class="card">
+        <div class="card-header">
+            <h3 id="frmTitle" class="card-title">@Lang.Transactions</h3>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body">
+            <table id="_List" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>@Lang.TransactionId</th>
+                        <th>@Lang.CreateDate</th>
+                        <th>@Lang.Amount</th>
+                        <th>@Lang.Qty</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <!-- /.card-body -->
+    </div>
+    <!-- /.card -->
+</div>
+
+<div class="modal modal-danger fade" id="modal-rollback">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="rollback-dismiss">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <p>@Msg.msgRollBackTransaction</p>
+                <input type="hidden" id="SetToRollback" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline pull-left" data-dismiss="modal">@Options.Close</button>
+                <button type="button" onclick="RollBack()" class="btn btn-outline">@Options.RollBack</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+
+<div class="modal modal-warning fade" id="modal-complete">
+    <div class="modal-dialog">
+        <div class="modal-content bg-success">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="complete-dismiss">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <p>@Msg.msCompleteThisTransaction</p>
+                <input type="hidden" id="SetToComplete" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline pull-left" data-dismiss="modal">@Options.Close</button>
+                <button type="button" onclick="Complete()" class="btn btn-outline">@Options.Complete</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+
+@section scripts
+{
+    <script src="~/Content/eng/plugins/jquery/jquery.min.js"></script>
+    <script src="~/Scripts/notify.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables-autofill/js/dataTables.autoFill.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables-autofill/js/autoFill.bootstrap4.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/Content/eng/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+
+
+    <script>
+        $(document).ready(function() {
+            $('#newForm').hide();
+            LoadData();
+            LoadStatement();
+        });
+
+        function LoadStatement() {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("GetStatement", "Account")",
+                data: {id: "@ViewBag.Id"},
+                traditional: true,
+                success: function(state) {
+                    $("#_balance").text(state.Balance);
+                    $("#_outcome").text(state.TotalOutCome);
+                    $("#_income").text(state.TotalIncome);
+                    //$("#_lastActivety").text(parsDate(state.LastActivity));
+                    $("#_lastActivety").text(state.LastActivity2);
+                    $("#_transCount").text(state.TotalTransaction);
+                }
+            });
+        }
+        function LoadData() {
+            var table = $('#_List').DataTable({
+                "responsive": true,
+                "paging": true,
+                "lengthChange": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false,
+                "ajax": {
+                    "url": "@Url.Action("GetTransactions", "SEDC")",
+                    "type": "GET",
+                    "datatype": "json",
+                    "dataSrc": ""
+                },
+                "columnDefs": [
+                    { "targets": [0, 6], "orderable": false },
+                ],
+                "columns": [
+                    { "data": "Id", "title": "#" },
+                    { "data": "transID", "title": "#" },
+                    {
+                        "render": function (data, type, row, meta) {
+                            return "<a class='text-bold text-info'>" + parsDate(row.CreateDate) + " </a>";
+                        }
+                    },
+                    { "data": "AMT", "title": "#" },
+                    { "data": "vendQty", "title": "#" }
+                   
+                ]
+
+            });
+        }
+
+
+        function Show() {
+            var frmState = $("#formState").val();
+            if (frmState == "shown") {
+                $("#newForm").hide('slow');
+                $("#newForm").empty();
+                $("#editForm").hide('slow');
+                $("#editForm").empty();
+                $("#formState").val("hidden");
+            } else {
+                $.ajax({
+                    type: "GET",
+                    url: "@Url.Action("NewTransaction", "SEDC")",
+                    traditional: true,
+                    success: function(form) {
+                        $("#editForm").hide('slow');
+                        $("#editForm").empty();
+                        $("#newForm").empty();
+                        $("#newForm").append(form);
+                        $("#newForm").show('slow');
+                        $("#formState").val("shown");
+                    }
+                });
+            }
+
+        }
+
+        function Save() {
+            var amount = $("#Amount").val();
+            var cpass = $("#cpass").val();
+            var meter = $("#MeterNumber").val();
+
+            if (amount == "") {
+                $.notify("@Msg.errAmount", "warning");
+                return;
+            }
+            if (meter == "") {
+                $.notify("@Msg.errMeterNumber", "warning");
+                return;
+            }
+            if (cpass == "") {
+                $.notify("@Msg.errCPass", "warning");
+                return;
+            }
+            //Save the user
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("SaveTransaction", "SEDC")",
+                data: { amount: amount, meter: meter, cpass: cpass},
+                success: function(resp) {
+                    if (resp.state) {
+                        $.notify("@Msg.TransactionSchedueldSuccessfully", "success");
+                        ReloadTable();
+                        $("#newForm").hide('slow');
+                        $("#newForm").empty();
+                        $("#formState").val("hidden");
+                    } else {
+                        $.notify(resp.msg, "error");
+                    }
+                },
+                error: function(err) {
+                    //console.log(err);
+                }
+            });
+
+        }
+
+
+        function Complete() {
+            var id = $("#SetToComplete").val();
+            $("#complete-dismiss").click();
+            if (id != "") {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("CompleteTransaction", "Transactions")",
+                    data: { id: id },
+                    datatype: "json",
+                    traditional: true,
+                    success: function(state) {
+                        if (state) {
+                            $.notify("@Msg.CompletiedSuccessfully", "success");
+                            $("#SetToComplete").val('');
+                            ReloadTable();
+                            LoadStatement();
+                        } else {
+                            $.notify("@Msg.Error", "error");
+                        }
+                    },
+                    error: function(err) {
+                        $.notify("@Msg.Error", "error");
+                    }
+                });
+            }
+        }
+
+        function RollBack() {
+            var id = $("#SetToReset").val();
+            $("#complete-dismiss").click();
+            if (id != "") {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("RollBackTransaction", "Transactions")",
+                    data: { id: id },
+                    datatype: "json",
+                    traditional: true,
+                    success: function(state) {
+                        if (state) {
+                            $.notify("@Msg.RolledBackSuccessfully", "success");
+                            $("#SetToRollback").val('');
+                            ReloadTable();
+
+                        } else {
+                            $.notify("@Msg.Error", "error");
+                        }
+                    },
+                    error: function(err) {
+                        $.notify("@Msg.Error", "error");
+                    }
+                });
+            }
+        }
+
+        function SetComplete(id) {
+            $("#SetToComplete").val(id);
+        }
+
+        function SetRllBack(id) {
+            $("#SetToRollback").val(id);
+        }
+
+
+        function parsDate(jsonDateString) {
+            try {
+                var date = jsonDateString.replace('/Date(', '');
+                var dt = new Date(parseInt(date));
+                return dt.toLocaleDateString('en-US');
+            } catch (err) {
+                return jsonDateString;
+            }
+        }
+
+        function ReloadTable() {
+            var table = $('#_List').DataTable();
+            table.ajax.reload();
+        }
+
+
+    </script>
+}
+
+

@@ -1,0 +1,51 @@
+﻿@using EControle.UI.Web.App_Start.Resources
+<div class="row">
+    <div class="card">
+        <div class="card-header">
+            <h3 id="frmTitle" class="card-title">@Options.New @Lang.user</h3>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body">
+            <div class="row">
+
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>@Lang.Name</label>
+                        <input type="hidden" id="role" />
+                        <input type="text" class="form-control" id="Name" name="Name" placeholder="@Lang.Name" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>@Lang.Phone</label>
+                        <input type="text" class="form-control" id="Phone" name="Phone" placeholder="@Lang.Phone" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>@Lang.Login @Lang.Name</label>
+                        <input type="text" class="form-control" id="UserName" name="Email" placeholder="@Lang.Login @Lang.Name" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>@Lang.Gender</label>
+                        <select id="Gender" class="form-control">
+                            <option value="1">@Lang.Male</option>
+                            <option value="2">@Lang.Female</option>
+                            <option value="3">@Lang.Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <button class="btn btn-block btn-success" id="btn" onclick="SaveUser()">@Options.Save</button>
+                </div>
+            </div>
+        </div>
+        <!-- /.card-body -->
+    </div>
+</div>
+
+
+

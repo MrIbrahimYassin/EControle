@@ -1,0 +1,41 @@
+﻿@using EControle.UI.Web.App_Start.Resources
+    <div class="card">
+        <div class="card-header">
+            <h3 id="frmTitle" class="card-title">@Options.New </h3>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>@Lang.Amount</label>
+                        <input type="text" class="form-control" id="Amount" name="Amount" placeholder="@Lang.Amount" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>@Lang.To @Lang.Account</label>
+                        <input type="text" class="form-control" value="" autocomplete="false" id="ToId" name="ToId" placeholder="@Lang.Amount" />
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>@Lang.CPassword</label>
+                        <input type="password" class="form-control" id="cpass" name="cpass" placeholder="@Lang.Owner @Lang.CPassword" />
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <button class="btn btn-flat btn-success" id="btn" onclick="Save()">@Options.Save</button>
+                    <button class="btn btn-flat btn-default" id="btnClose" onclick="Show()">@Options.Cancel</button>
+                </div>
+            </div>
+        </div>
+        <!-- /.card-body -->
+    </div>
+
+
+
+
+
